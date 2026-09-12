@@ -1,52 +1,205 @@
 # /watch
 
-Give an agent video evidence: a URL or local file becomes timestamped frames and a transcript. Works with Claude Code and other [Agent Skills](https://agentskills.io) hosts, including Codex, Cursor, and Copilot. Native captions come first; optional local WhisperX or Groq/OpenAI transcription handles videos without captions.
+Give an agent video evidence: a URL or local file becomes timestamped frames and a transcript. Install it in Claude Desktop for Cowork or Code, or use it with Codex and other [Agent Skills](https://agentskills.io) hosts. Native captions come first; optional local WhisperX or Groq/OpenAI transcription handles videos without captions.
 
-## Install and get a first result
+## Choose your app
 
-**Claude Code:** type these in Claude Code, then reload the host and check skill autocomplete. Depending on the host version, the plugin skill may appear as `/watch:watch`.
+**Using Claude? Run Watch in Cowork or Code.** The plugin is not used in regular Chat. For a first setup, use one of the desktop paths below; [browser sessions have extra limitations](#using-a-web-app).
+
+| Where you use your agent | Start here |
+|---|---|
+| **Claude Desktop — Cowork or Code** | [Install through Customize](#claude-desktop--cowork-or-code) — no terminal needed |
+| **Codex — desktop app, CLI, or IDE extension** | [Ask Codex to install it](#codex) — no terminal needed |
+| **Claude Code in VS Code** | [Use the extension's plugin window](#claude-code-in-vs-code) |
+| **Claude Code in a terminal** | [Enter the plugin commands](#claude-code-in-a-terminal) |
+| **Cursor, Copilot, or another local agent** | [Use the Skills CLI](#other-local-agents) |
+| **Claude or ChatGPT in a browser** | [Check the supported mode and limitations](#using-a-web-app) |
+
+Choose **one installation method** for your agent. If Watch is already installed, go straight to [your first video](#try-your-first-video).
+
+### Claude Desktop — Cowork or Code
+
+1. Open **Claude Desktop** and click **Customize** in the sidebar.
+2. Select **Plugins**, open **Add**, then choose **Add marketplace**.
+
+![Claude Desktop Customize page with Plugins selected and the Add button at the top right](docs/images/install/claude-customize-plugins.png)
+
+3. Choose **Add from a repository**.
+
+![Add marketplace dialog with the Add from a repository option](docs/images/install/claude-add-repository.png)
+
+4. In **URL**, paste the address below. If a picker opens, paste into its search field and select **Use** for that URL. Click **Sync**.
+
+```text
+https://github.com/bradautomates/claude-video
+```
+
+![Marketplace URL form filled with the public claude-video GitHub address and a Sync button](docs/images/install/claude-marketplace-url.png)
+
+5. Find **Watch** in the added marketplace and install it. Adding the marketplace alone does not install Watch.
+6. Start a **Cowork** task or a **Code** session and ask it to use the watch skill. Continue with [your first video](#try-your-first-video).
+
+If you do not see these controls, update Claude Desktop. On a managed account, your administrator may control which plugins you can add. See the [official plugin guide](https://claude.com/docs/cowork/guide/plugins).
+
+*Screenshots show the installation controls only. Labels may vary slightly by app version.*
+
+### Codex
+
+**Paste this into Codex's message box** in the desktop app, CLI, or IDE extension:
+
+```text
+Use $skill-installer to install the watch skill from:
+https://github.com/bradautomates/claude-video/tree/main/skills/watch
+```
+
+Let Codex finish the installation, then start a new turn or session and ask it to use **watch**. If the skill does not appear, restart Codex. You do not need Node/npm for this route. See [OpenAI's skill installation guide](https://learn.chatgpt.com/docs/build-skills#install-curated-skills-for-local-use).
+
+<details>
+<summary>Alternative: native Codex plugin installation (desktop and CLI)</summary>
+
+If you already have the Codex CLI installed, run these **in your computer's terminal**, one at a time:
+
+```bash
+codex plugin marketplace add bradautomates/claude-video
+codex plugin add watch@claude-video
+```
+
+Start a new Codex session afterward. You can inspect the result with:
+
+```bash
+codex plugin list --marketplace claude-video
+```
+
+The desktop Plugins directory and CLI `/plugins` browser also show configured marketplaces. The IDE extension currently supports standalone skills, **not plugins**; use the message-box installation above there. This repository is a custom marketplace, so Watch will not automatically appear in the public plugin directory. [Official plugin documentation](https://learn.chatgpt.com/docs/plugins)
+
+</details>
+
+Continue with [your first video](#try-your-first-video).
+
+### Claude Code in VS Code
+
+1. Open the **Claude Code** panel in VS Code.
+2. Type **`/plugins`** into the Claude Code message box to open **Manage plugins**.
+3. Select **Marketplaces** and add `bradautomates/claude-video`.
+4. Return to **Plugins**, find **watch**, and choose **Install for you** to use it across your projects.
+5. Follow any activation or restart message. Then type `/watch` and select the suggested skill — normally **`/watch:watch`** — or ask Claude to use watch by name.
+
+The extension has its own graphical installer; you do not need to switch to a terminal. Its plugin configuration is shared with the local Claude Code CLI. [Official VS Code instructions](https://code.claude.com/docs/en/vs-code#manage-plugins)
+
+Continue with [your first video](#try-your-first-video).
+
+### Claude Code in a terminal
+
+Open a terminal and start **Claude Code** with `claude`. Enter these **inside the Claude Code session**, one at a time:
 
 ```text
 /plugin marketplace add bradautomates/claude-video
 /plugin install watch@claude-video
 ```
 
-**Other Agent Skills hosts:** run this in your terminal. Node/npm is needed for this installer, not for watch's Python runtime. Follow the CLI's reported destination, then restart the agent.
+Follow the activation message. If Watch is not available yet, start a new Claude Code session. Type `/watch` and select **`/watch:watch`** from autocomplete. [Official installation guide](https://code.claude.com/docs/en/discover-plugins)
+
+<details>
+<summary>Already at an ordinary terminal prompt?</summary>
+
+Use these executable commands instead of the slash commands:
+
+```bash
+claude plugin marketplace add bradautomates/claude-video
+claude plugin install watch@claude-video
+```
+
+Then start a new Claude Code session.
+
+</details>
+
+Continue with [your first video](#try-your-first-video).
+
+### Other local agents
+
+For other [Agent Skills hosts](https://agentskills.io), install [Node.js](https://nodejs.org/en/download) if needed, then run this **in your computer's terminal**:
 
 ```bash
 npx skills add bradautomates/claude-video -g --skill watch
-# Optional: target a host explicitly with -a codex
 ```
 
-**Hosted claude.ai:** download the `watch.skill` asset from [Releases](https://github.com/bradautomates/claude-video/releases/latest) and upload it through the Skills settings. GitHub's source ZIP is not the `.skill` asset. Tool execution and network egress are separate: a hosted environment may run binaries but block video/CDN/API/model hosts. Check your account's [execution and network settings](https://support.claude.com/en/articles/12111783-create-and-edit-files-with-claude).
+Select your agent when prompted, follow the installer's reported destination, then restart the agent. Node/npm is needed for this installer, not for Watch's Python runtime. This command does not install Watch into Claude Desktop's Cowork environment.
 
-Install media dependencies in the same environment as the agent: **Python 3.10+, FFmpeg/ffprobe, and current yt-dlp**. YouTube also needs a supported JavaScript runtime/EJS setup. The first-run skill can install missing media tools with Homebrew on macOS; elsewhere it supplies commands.
+You can target an agent explicitly, for example `-a codex`, but Codex users can use the simpler [message-box installation](#codex). See the [Skills CLI documentation](https://github.com/vercel-labs/skills).
 
-| Platform | Terminal commands |
-|---|---|
-| macOS | Install [Homebrew](https://brew.sh), then `brew install python ffmpeg yt-dlp`. Current yt-dlp formula includes Deno/EJS/curl-cffi. |
-| Ubuntu/Debian | `sudo apt install python3 ffmpeg pipx`, then `pipx install "yt-dlp[default,curl-cffi]"` and `pipx ensurepath`. Install [Deno](https://docs.deno.com/runtime/getting_started/installation/) for YouTube. |
-| Windows | Install Python 3.10+, then `winget install --id Gyan.FFmpeg --exact`, `winget install --id yt-dlp.yt-dlp --exact`, and `winget install --id DenoLand.Deno --exact`. |
+## Try your first video
 
-Reopen the terminal/agent after PATH changes. Verify `ffmpeg -version`, `ffprobe -version`, and `yt-dlp --version`. On Windows, use a working `python` or `py -3`; inspect `--version` rather than assuming all `python3` commands are Store aliases. The tested yt-dlp baseline is **2026.08.19**; watch runs the executable on PATH rather than pinning a Python dependency.
-
-For a first success, give the agent a **short local video**, with no key required:
+1. Give your agent access to a folder containing a **short video**, such as `example.mp4`. In Cowork, connect that folder; in a coding agent, open the folder as your project. Replace the filename below with your own.
+2. Paste this **into the agent's message box**:
 
 ```text
-/watch /absolute/path/to/video.mp4 --no-whisper
+Use the watch skill on example.mp4 in the folder I shared.
+For setup, choose balanced detail and captions only (none).
+Summarize what is visible, with timestamps.
 ```
 
-If your host does not expose slash commands, ask it to use the watch skill on that file with speech fallback disabled. The first-run wizard lets you choose `balanced` detail and `none` for the saved transcription backend. The agent locates the bundled scripts itself, reads the extracted images, and returns a timestamped summary. This confirms local extraction independently of network access.
+3. Let the agent check its tools. If it reports a missing program, follow [Missing tools?](#missing-tools) below, then retry.
 
-Next, try a public captioned video with `--detail transcript`. Caption-only success reports the selected language and source without downloading media. Not every public URL has captions or permits anonymous access.
+**Success looks like a timestamped visual summary.** This first run needs no transcription API key or local speech model. A local file with speech fallback disabled will not produce a speech transcript. The agent finds its bundled scripts itself; you do not need to locate a plugin-cache folder.
+
+Next, try a public video URL and ask for **transcript detail**. Native captions can be read without downloading the video. URL access depends on the source and your session's network permissions.
+
+You can add [speech transcription](#choose-a-transcription-fallback) afterward. **Local WhisperX requires Watch v0.3.0 or later**; if your installed copy is v0.2.0, update after the new release is available.
+
+## Missing tools?
+
+Watch uses **Python 3.10+, FFmpeg/ffprobe, and current yt-dlp**. YouTube also needs a supported JavaScript runtime/EJS setup. Installing the skill gives the agent instructions and scripts; it does not bundle these programs.
+
+**First, ask your agent:**
+
+```text
+Use the watch skill's bundled setup.py to check dependencies in this session.
+Tell me which tools are missing and help me install them here.
+```
+
+**Cowork and cloud sessions:** let the agent check inside its execution environment. Installing FFmpeg with Homebrew on your Mac does not install it inside Cowork's Linux VM or cloud sandbox. Package and network permissions may require administrator help. A new cloud task may also need setup again. [Cowork architecture](https://support.claude.com/en/articles/14479288-claude-cowork-architecture-overview)
+
+**Agents running directly on your computer:** Watch can install missing media tools through Homebrew on macOS. On other systems it supplies commands. If manual installation is needed, run the appropriate commands in a terminal:
+
+| Operating system | Install commands |
+|---|---|
+| macOS | Install [Homebrew](https://brew.sh), then `brew install python ffmpeg yt-dlp`. The current formula includes Deno/EJS/curl-cffi. |
+| Ubuntu/Debian | `sudo apt install python3 ffmpeg pipx`, then `pipx install "yt-dlp[default,curl-cffi]"` and `pipx ensurepath`. Install [Deno](https://docs.deno.com/runtime/getting_started/installation/) for YouTube. |
+| Windows | Install [Python 3.10+](https://www.python.org/downloads/windows/), then `winget install --id Gyan.FFmpeg --exact`, `winget install --id yt-dlp.yt-dlp --exact`, and `winget install --id DenoLand.Deno --exact`. |
+
+Reopen the terminal and agent after installation so they can find the new tools. On Windows, verify Python with `python --version` or `py -3 --version`. The tested yt-dlp baseline is **2026.08.19**; Watch uses the executable available in the active environment.
+
+## Using a web app?
+
+For the easiest first setup, use [Claude Desktop](#claude-desktop--cowork-or-code) or [Codex locally](#codex).
+
+| Browser surface | What to know |
+|---|---|
+| **Regular Claude Chat** | Watch's plugin is used in Cowork or Code. Uploading a standalone skill to Chat does not remove sandbox network restrictions. |
+| **Cowork on the web** | Select **Cowork** in the message box. Current Cowork supports skills/plugins on the web, but Watch still needs working tools and permitted access to video, API, and model hosts. Its full workflow has not been verified here. |
+| **Claude Code on the web** | Uses a cloud environment with its own setup and network settings. The interactive `/plugin` installer is unavailable there. The terminal walkthrough above is for local Claude Code. |
+| **ChatGPT/Codex browser surfaces** | Attaching `watch.skill` to a chat is not a local Codex installation. Use the Codex installer above; a public/workspace plugin listing is a separate distribution route. |
+
+See the official guides for [Cowork on web and desktop](https://support.claude.com/en/articles/15520349-use-claude-cowork-on-web-desktop-and-mobile), [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web), and [OpenAI plugin surfaces](https://learn.chatgpt.com/docs/plugins).
+
+<details>
+<summary>Advanced: standalone skill upload in Claude</summary>
+
+This is a conditional route, not the recommended beginner setup. Enable code execution, then use **Customize → Skills → + → Create skill → Upload a skill**. See [Claude's custom-skill instructions](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
+
+[Releases](https://github.com/bradautomates/claude-video/releases/latest) include `watch.skill`, a ZIP-format archive of the skill folder. If the picker requires a `.zip` extension, make a copy named `watch.zip`. The current picker's acceptance of this release artifact has not been verified. GitHub's **Source code (zip)** is the whole repository, not the skill package. Use **Upload a skill**, not **Upload plugin**.
+
+A successful upload does not establish a working video pipeline. The hosted environment may run programs while blocking video/CDN/API/model downloads. Check the account's [execution and network settings](https://support.claude.com/en/articles/12111783-create-and-edit-files-with-claude). An accessible local file avoids its download, but speech transcription may still require permitted network access.
+
+</details>
 
 ## Choose a transcription fallback
 
-The first-run wizard asks once for your detail preference and for a fallback backend. Captions remain first under every choice.
+The first-run wizard asks for your detail preference and fallback backend. Start with `none` for a quick visual result; choose a speech backend when you need it. Captions remain first under every choice. Settings persist in the execution environment, so temporary cloud sessions may need setup again.
 
 | Backend | Requirements and behavior |
 |---|---|
-| `whisperx` (recommended) | Local transcription, no API key. The skill manages a separate Python 3.12 environment and warms its model caches. |
+| `whisperx` | Recommended for transcription on a verified local machine. No API key; the skill manages a separate Python 3.12 environment and downloads its models. |
 | `groq` | Cloud `whisper-large-v3`; needs `GROQ_API_KEY` from [Groq](https://console.groq.com/keys). |
 | `openai` | Cloud `whisper-1`; needs `OPENAI_API_KEY` from [OpenAI](https://platform.openai.com/api-keys). |
 | `none` | Captions only. Local files and captionless URLs can still provide visual evidence. |
@@ -56,6 +209,8 @@ Existing 0.2.0 users retain `auto`: Groq key first, then OpenAI. No automatic mi
 Settings live in `~/.config/watch/.env`. Enter keys privately there or in the process environment; do not commit them or paste them into public issues. Cloud-key lookup is provider preference first, then environment → user file → cwd `.env` for each provider. Explicit providers never borrow another provider's key. Config files support UTF-8, UTF-8 BOM, and BOM-marked UTF-16; quotes, comments, and literal Windows paths work without shell expansion. Last assignment wins.
 
 ### Managed WhisperX
+
+WhisperX runs wherever the agent executes its scripts. In a local session, inference runs on your computer; in a cloud session it runs on the cloud host. It avoids a separate transcription API, but cloud execution does not keep audio on your device.
 
 Have the agent run the bundled `setup.py --install-whisperx` (or `--backend whisperx --detail balanced`). It provisions uv if needed, installs Python 3.12 and **WhisperX 3.8.6**, and transcribes two seconds of silence to warm the Whisper and Silero caches. No sudo is used by the installer. The base watch process stays standard-library-only and can use newer Python independently.
 
@@ -95,7 +250,7 @@ Local inference has no default timeout; `WATCH_WHISPERX_TIMEOUT` accepts positiv
 | `balanced` | Scene changes; uniform fallback on nearly static clips | 100 |
 | `token-burner` | Scene changes without a count cap; warning above 250 | Uncapped |
 
-Use `WATCH_DETAIL` for the saved preference or `--detail` for one run. Best accuracy is usually with videos under 10 minutes or a focused interval:
+Use `WATCH_DETAIL` for the saved preference or `--detail` for one run. The `/watch` examples below are shorthand: in Claude Code plugins, select `/watch:watch`; in other hosts, ask the watch skill to apply the same options. Best accuracy is usually with videos under 10 minutes or a focused interval:
 
 ```text
 /watch video.mp4 --start 2:15 --end 2:45
@@ -128,7 +283,18 @@ Cloud uploads use a 24,000,000-byte file budget with multipart and actual chunk 
 
 ## Updating and troubleshooting
 
-Update the skill separately from its media tools. Claude Code marketplace auto-updates depend on your settings; use `/plugin update watch@claude-video` and reload. Other hosts can use `npx skills update watch -g`.
+Update Watch using the same method you installed it with, then start a new session:
+
+| Installation method | Update path |
+|---|---|
+| Claude Desktop | Open **Customize → Plugins → Add → Manage marketplaces**, select the `claude-video` marketplace, and update it. Check the installed Watch version afterward. |
+| Claude Code CLI | Enter `/plugin update watch@claude-video` inside Claude Code and follow the activation message. |
+| Claude Code in VS Code | Open `/plugins`, refresh `claude-video` in **Marketplaces**, and check the installed plugin. |
+| Codex native plugin | In a terminal, run `codex plugin marketplace upgrade claude-video`, then `codex plugin add watch@claude-video`. |
+| Codex Skill Installer | Ask Codex to update the existing watch skill from this repository. The installer does not overwrite an existing skill automatically. |
+| Skills CLI | In a terminal, run `npx skills update watch -g`. |
+
+Marketplace auto-update behavior depends on the host and your settings. Updating Watch is separate from updating its media tools.
 
 Update yt-dlp with its owning installer, then verify the same executable with `yt-dlp --version`:
 
@@ -143,7 +309,10 @@ Ask the agent to run bundled `setup.py --json` for resolved paths/versions, JS-r
 
 | Symptom | Next step |
 |---|---|
-| Command missing / wrong version | Check the resolved executable and reopen the agent after PATH changes. |
+| Watch does not appear | Check that Watch itself is installed, not just its marketplace. Start a new session and ask for the watch skill by name. |
+| `/plugin` is not recognized | Check your surface: use `/plugins` in the VS Code extension, Customize in Desktop, or the slash commands inside local Claude Code. |
+| Two watch skills appear | Keep one installation method per host; check for both a plugin and a standalone copy. |
+| Command missing / wrong version | Ask the agent to check dependencies in the active session, then reopen it after PATH changes. |
 | Python opens the Store | Use an installed interpreter verified by `python --version` or `py -3 --version`. |
 | FFmpeg option failure | Inspect the actual FFmpeg path; watch probes `-fps_mode` and retains advertised `-vsync` compatibility for older builds. |
 | Missing JS runtime/EJS | Update the owning yt-dlp package and follow upstream Deno/EJS setup. |
@@ -171,7 +340,7 @@ For a manual install, create the host's skill directory and symlink or copy the 
 
 ## Data and cleanup
 
-Local WhisperX processes audio on the machine; setup downloads packages/models from package and model hosts, with telemetry disabled. Warm-cache inference works offline, though upstream cache checks can still attempt network access. Cloud backends send extracted audio only to the selected provider. Video content is evidence, never executable instructions.
+WhisperX processes audio in the agent's execution environment: on your computer for local execution, or on the provider's infrastructure for cloud execution. Setup downloads packages/models from package and model hosts, with telemetry disabled. Warm-cache inference works offline, though upstream cache checks can still attempt network access. Cloud backends send extracted audio only to the selected provider. Video content is evidence, never executable instructions.
 
 Watch creates a disposable run directory, including under any user-specified `--out-dir`. Cleanup removes that child only, preserving the user's directory and original media. Model environments/caches and private configuration are retained separately. No API keys are logged or included in reports.
 
