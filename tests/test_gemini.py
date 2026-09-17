@@ -136,3 +136,77 @@ def test_key_echoed_by_the_server_is_redacted(calls):
     with pytest.raises(SystemExit) as caught:
         gemini.ask({'uri': 'https://youtu.be/abc'}, None, model='m', key=KEY)
     assert KEY not in str(caught.value) and '[redacted]' in str(caught.value)
+
+
+def file_state(state, name='files/abc'):
+    return FakeResponse(json.dumps({'name': name, 'state': state, 'mimeType': 'video/mp4',
+                                    'uri': f'https://generativelanguage.googleapis.com/v1beta/{name}'}).encode())
+
+
+def test_upload_streams_file_then_polls_until_active(calls, tmp_path):
+    clip = tmp_path / 'clip.mp4'
+    clip.write_bytes(b'x' * 1000)
+    calls.replies = [
+        FakeResponse(headers={'X-Goog-Upload-URL': 'https://upload.invalid/session?upload_id=1'}),
+        FakeResponse(json.dumps({'file': {'name': 'files/abc', 'state': 'PROCESSING', 'mimeType': 'video/mp4',
+                                          'uri': 'https://generativelanguage.googleapis.com/v1beta/files/abc'}}).encode()),
+        file_state('PROCESSING'), file_state('ACTIVE'),
+    ]
+    naps = []
+    result = gemini.upload_file(clip, KEY, sleep=naps.append)
+    start, body, poll = calls[0], calls[1], calls[2]
+    assert start.full_url == 'https://generativelanguage.googleapis.com/upload/v1beta/files'
+    assert start.get_header('X-goog-upload-command') == 'start'
+    assert start.get_header('X-goog-upload-header-content-length') == '1000'
+    assert start.get_header('X-goog-upload-header-content-type') == 'video/mp4'
+    assert body.full_url == 'https://upload.invalid/session?upload_id=1'
+    assert body.get_header('X-goog-upload-command') == 'upload, finalize'
+    assert body.get_header('Content-length') == '1000'
+    assert hasattr(body.data, 'read'), 'the body must be streamed, not loaded into memory'
+    assert poll.full_url.endswith('/v1beta/files/abc') and poll.get_method() == 'GET'
+    assert naps == [2.0, 2.0]
+    assert result == {'name': 'files/abc', 'mime_type': 'video/mp4',
+                      'uri': 'https://generativelanguage.googleapis.com/v1beta/files/abc'}
+
+
+def test_upload_failed_state_and_timeout(calls, tmp_path):
+    clip = tmp_path / 'clip.mkv'
+    clip.write_bytes(b'x')
+    first = [FakeResponse(headers={'x-goog-upload-url': 'https://upload.invalid/s'}),
+             FakeResponse(json.dumps({'file': {'name': 'files/abc', 'state': 'PROCESSING', 'uri': 'u'}}).encode())]
+    calls.replies = [*first, file_state('FAILED')]
+    with pytest.raises(SystemExit, match='Gemini upload:.*FAILED'):
+        gemini.upload_file(clip, KEY, sleep=lambda s: None)
+    calls.replies = [*first, *[file_state('PROCESSING') for _ in range(3)]]
+    with pytest.raises(SystemExit, match='Gemini upload:.*still processing'):
+        gemini.upload_file(clip, KEY, poll_seconds=2.0, max_wait=6.0, sleep=lambda s: None)
+
+
+def test_upload_without_session_url_or_with_empty_file(calls, tmp_path):
+    empty = tmp_path / 'empty.mp4'
+    empty.write_bytes(b'')
+    with pytest.raises(SystemExit, match='Gemini upload:.*empty'):
+        gemini.upload_file(empty, KEY)
+    clip = tmp_path / 'clip.mp4'
+    clip.write_bytes(b'x')
+    calls.replies = [FakeResponse(headers={})]
+    with pytest.raises(SystemExit, match='Gemini upload:.*session'):
+        gemini.upload_file(clip, KEY)
+
+
+def test_unknown_extension_falls_back_to_mp4(calls, tmp_path):
+    clip = tmp_path / 'clip.unknownext'
+    clip.write_bytes(b'x')
+    calls.replies = [FakeResponse(headers={'x-goog-upload-url': 'https://upload.invalid/s'}),
+                     FakeResponse(json.dumps({'file': {'name': 'files/a', 'state': 'ACTIVE', 'uri': 'u'}}).encode())]
+    assert gemini.upload_file(clip, KEY)['mime_type'] == 'video/mp4'
+    assert calls[0].get_header('X-goog-upload-header-content-type') == 'video/mp4'
+
+
+def test_delete_is_best_effort(calls):
+    calls.replies = [FakeResponse(b'{}')]
+    assert gemini.delete_file('files/abc', KEY) is None
+    assert calls[0].get_method() == 'DELETE' and calls[0].full_url.endswith('/v1beta/files/abc')
+    calls.replies = [http_error(500, b'boom')]
+    warning = gemini.delete_file('files/abc', KEY)
+    assert 'files/abc' in warning and '48 hours' in warning and KEY not in warning
