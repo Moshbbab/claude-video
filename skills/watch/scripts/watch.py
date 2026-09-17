@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import shutil
 import sys
 import tempfile
 from pathlib import Path
@@ -34,7 +35,7 @@ def run_gemini(args, config, key, start_sec, end_sec, auth) -> int:
     ignored = [flag for flag, name in LOCAL_ONLY_FLAGS if getattr(args, name) is not None]
     ignored += [flag for flag, on in (("--no-whisper", args.no_whisper), ("--no-dedup", args.no_dedup)) if on]
     clip = (start_sec, end_sec) if start_sec is not None or end_sec is not None else None
-    uploaded, warning, result, error, sent = None, None, None, None, "URL sent to Google"
+    uploaded, warning, result, error, sent, work = None, None, None, None, "URL sent to Google", None
     try:
         if gemini.is_youtube(args.source):
             video = {"uri": args.source}
@@ -42,9 +43,11 @@ def run_gemini(args, config, key, start_sec, end_sec, auth) -> int:
             parent = Path(args.out_dir).expanduser().resolve() if args.out_dir else None
             if parent:
                 parent.mkdir(parents=True, exist_ok=True)
+            sent = "not sent to Google"
             work = Path(tempfile.mkdtemp(prefix="watch-", dir=parent))
             print("[watch] downloading media…" if is_url(args.source) else "[watch] using local file…", file=sys.stderr)
             media = download(args.source, work / "download", **(auth if is_url(args.source) else {}))
+            sent = "upload to Google failed"
             print("[watch] uploading to the Gemini Files API…", file=sys.stderr)
             uploaded = gemini.upload_file(Path(media["video_path"]), key)
             video = {"uri": uploaded["uri"], "mime_type": uploaded["mime_type"]}
@@ -57,6 +60,8 @@ def run_gemini(args, config, key, start_sec, end_sec, auth) -> int:
     finally:
         if uploaded:
             warning = gemini.delete_file(uploaded["name"], key)
+        if work:  # Run-owned; holds at most a downloaded copy. A local source file lives elsewhere.
+            shutil.rmtree(work, ignore_errors=True)
 
     print()
     print("# watch: video report")

@@ -269,3 +269,18 @@ def test_explicit_gemini_without_key_fails_before_any_work(monkeypatch):
     monkeypatch.setattr(sys, 'argv', ['watch', 'https://vimeo.com/1', '--engine', 'gemini'])
     with pytest.raises(ConfigError, match='GEMINI_API_KEY'):
         watch.main()
+
+
+def test_failed_upload_is_reported_honestly_and_work_dir_removed(monkeypatch, capsys, static_clip, tmp_path):
+    import gemini
+    monkeypatch.setenv('GEMINI_API_KEY', 'unit-key')
+    def boom(path, key, **kw):
+        raise SystemExit('Gemini upload: nope. No local fallback was attempted; rerun with --engine local')
+    monkeypatch.setattr(gemini, 'upload_file', boom)
+    out_dir = tmp_path / 'out'
+    monkeypatch.setattr(sys, 'argv', ['watch', str(static_clip), '--out-dir', str(out_dir)])
+    assert watch.main() == 1
+    out = capsys.readouterr().out
+    assert 'URL sent to Google' not in out and 'upload to Google failed' in out
+    assert out_dir.is_dir() and list(out_dir.iterdir()) == [], 'the run-owned work dir must be removed'
+    assert static_clip.is_file(), 'the user source file is never deleted'

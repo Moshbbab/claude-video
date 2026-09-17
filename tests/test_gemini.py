@@ -210,3 +210,10 @@ def test_delete_is_best_effort(calls):
     calls.replies = [http_error(500, b'boom')]
     warning = gemini.delete_file('files/abc', KEY)
     assert 'files/abc' in warning and '48 hours' in warning and KEY not in warning
+
+
+def test_invalid_key_reported_as_http_400_is_still_auth(calls):
+    """Observed live: the Files API answers a malformed key with 400, not 401."""
+    calls.replies = [http_error(400, b'{"error":{"code":400,"message":"API key not valid. Please pass a valid API key.","status":"INVALID_ARGUMENT"}}')]
+    with pytest.raises(SystemExit, match='^Gemini auth:'):
+        gemini.ask({'uri': 'https://youtu.be/abc'}, None, model='m', key=KEY)

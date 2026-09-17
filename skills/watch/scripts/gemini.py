@@ -68,9 +68,11 @@ def _call(method: str, url: str, key: str, *, data=None, headers=None, timeout: 
         with urlopen(request, timeout=timeout) as response:
             return response.status, dict(response.headers), response.read()
     except HTTPError as exc:
-        category = ('auth' if exc.code in (401, 403) else 'quota' if exc.code == 429
+        message = _error_message(exc.read())
+        # The Files API answers a malformed key with 400 "API key not valid", not 401.
+        category = ('auth' if exc.code in (401, 403) or 'api key' in message.lower() else 'quota' if exc.code == 429
                     else 'service' if exc.code >= 500 else 'rejected')
-        raise _fail(category, f'HTTP {exc.code}: {_error_message(exc.read())}', key) from None
+        raise _fail(category, f'HTTP {exc.code}: {message}', key) from None
     except (URLError, TimeoutError, OSError) as exc:
         raise _fail('network', f'{type(exc).__name__}: {getattr(exc, "reason", exc)}', key) from None
 
