@@ -12,8 +12,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-from config import (CONFIG_DIR, CONFIG_FILE, ConfigError, DETAILS, get_config,
-                    load_api_key, read_env_file, write_settings)
+from config import (CONFIG_DIR, CONFIG_FILE, ConfigError, DETAILS, ENGINES, get_config,
+                    load_api_key, load_gemini_key, read_env_file, resolve_engine, write_settings)
 from runtime import configure_stdio, diagnostic, run_text
 
 REQUIRED_BINARIES = ['ffmpeg', 'ffprobe', 'yt-dlp']
@@ -23,6 +23,9 @@ ENV_TEMPLATE = '''# /watch configuration. No shell interpolation; last assignmen
 # Native captions always come first. Optional fallback: auto|whisperx|groq|openai|none.
 # auto preserves the Groq-then-OpenAI preference for existing installations.
 # The first-run skill wizard sets WATCH_DETAIL and WATCH_WHISPER_BACKEND.
+# WATCH_ENGINE=auto|gemini|local. auto uses Gemini when GEMINI_API_KEY is set.
+# With the gemini engine, local videos are uploaded to Google for analysis.
+GEMINI_API_KEY=
 GROQ_API_KEY=
 OPENAI_API_KEY=
 '''
@@ -142,12 +145,21 @@ def _status(detailed=False):
     missing = _check_binaries()
     _check_file_permissions(CONFIG_FILE)
     cfg = get_config()
+    gemini_key = bool(load_gemini_key())
+    try:
+        engine = resolve_engine(cfg['engine'], gemini_key)
+    except ConfigError:
+        engine = 'gemini'  # Explicitly chosen but the key is missing; gemini_key_present reports it.
+    binaries_required = engine == 'local'
     has_key, detected = _have_api_key()
     chosen = cfg['whisper_backend']
     backend = detected if chosen == 'auto' else chosen
     local_ready = _whisperx_status(cfg, detailed)
     backend_ready = local_ready if chosen == 'whisperx' else (bool(load_api_key(backend)[1]) if backend in ('groq', 'openai') else chosen == 'none')
-    result = {'status': 'needs_install' if missing else 'ready', 'can_proceed': not missing,
+    blocked = bool(missing) and binaries_required
+    result = {'status': 'needs_install' if blocked else 'ready', 'can_proceed': not blocked,
+              'engine': engine, 'configured_engine': cfg['engine'], 'gemini_key_present': gemini_key,
+              'gemini_model': cfg['gemini_model'], 'binaries_required': binaries_required,
               'first_run': is_first_run(), 'setup_complete': not is_first_run(),
               'missing_binaries': missing, 'whisper_backend': backend, 'configured_backend': chosen,
               'has_api_key': has_key, 'backend_ready': backend_ready,
@@ -184,7 +196,20 @@ def cmd_json():
     return 0
 
 
-def cmd_install(backend=None, detail=None):
+def cmd_install(backend=None, detail=None, engine=None):
+    if engine:
+        _scaffold_env()
+        write_settings({'WATCH_ENGINE': engine}, CONFIG_FILE)
+    if engine == 'gemini':
+        if not load_gemini_key():
+            print(f'[setup] Add GEMINI_API_KEY privately to {CONFIG_FILE} (free key: https://aistudio.google.com/apikey), '
+                  'then rerun --engine gemini. Local videos will be uploaded to Google for analysis.', file=sys.stderr)
+            return 3
+        _write_setup_complete()
+        missing = _check_binaries()
+        note = (f" Optional: install {', '.join(_brew_pkg(missing))} for non-YouTube URLs and --engine local." if missing else '')
+        print(f'[setup] Gemini engine is ready. Configuration: {CONFIG_FILE}.{note}')
+        return 0
     missing = _check_binaries()
     if missing:
         system = platform.system()
@@ -295,13 +320,14 @@ def main():
     mode.add_argument('--install-whisperx', action='store_true')
     parser.add_argument('--backend', choices=['auto', 'whisperx', 'groq', 'openai', 'none'])
     parser.add_argument('--detail', choices=sorted(DETAILS))
+    parser.add_argument('--engine', choices=sorted(ENGINES))
     args = parser.parse_args()
     try:
         if args.check:
             return cmd_check()
         if args.json:
             return cmd_json()
-        return cmd_install('whisperx' if args.install_whisperx else args.backend, args.detail)
+        return cmd_install('whisperx' if args.install_whisperx else args.backend, args.detail, args.engine)
     except (ConfigError, OSError, ValueError) as exc:
         print(f'[setup] {exc}', file=sys.stderr)
         return 2
