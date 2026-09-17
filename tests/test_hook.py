@@ -35,3 +35,23 @@ def test_hook_handles_broken_interpreters(tmp_path):
         path.chmod(0o755)
     result = subprocess.run([bash, str(HOOK)], env={**os.environ, 'PATH': str(bindir), 'CLAUDE_PLUGIN_ROOT': str(tmp_path)}, capture_output=True, text=True)
     assert result.returncode == 0 and 'Python' in result.stdout
+
+
+def test_hooks_json_command_survives_spaced_plugin_root(tmp_path):
+    """Run the command string exactly as a shell would, from a root containing a space."""
+    import json
+    bash = shutil.which('bash')
+    if not bash or os.name == 'nt':
+        pytest.skip('Bash fixture runs on POSIX')
+    root = Path(__file__).resolve().parents[1]
+    command = json.loads((root / 'hooks/hooks.json').read_text())['hooks']['SessionStart'][0]['hooks'][0]['command']
+    plugin = tmp_path / 'plugin with spaces'
+    (plugin / 'hooks/scripts').mkdir(parents=True)
+    shutil.copy(HOOK, plugin / 'hooks/scripts/check-setup.sh')
+    setup = plugin / 'skills/watch/scripts/setup.py'
+    setup.parent.mkdir(parents=True)
+    setup.write_text('raise SystemExit(0)\n')
+    result = subprocess.run([bash, '-c', command], env={**os.environ, 'CLAUDE_PLUGIN_ROOT': str(plugin)},
+                            capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    assert 'No such file' not in result.stderr
