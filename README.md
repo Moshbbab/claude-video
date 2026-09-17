@@ -129,6 +129,10 @@ You can target an agent explicitly, for example `-a codex`, but Codex users can 
 
 ## Try your first video
 
+**Fastest path — let Gemini watch it.** Add a free [Google AI Studio key](https://aistudio.google.com/apikey) when the setup wizard asks (or put `GEMINI_API_KEY=...` in `~/.config/watch/.env`). Watch then hands the whole video — picture and sound — to Google's agentic video model and relays its timestamped answer. YouTube links need nothing else installed. Local files are uploaded to Google and deleted after the answer.
+
+**No key, or a private video?** Choose `local`. Watch extracts frames and a transcript on your machine (`ffmpeg` + `yt-dlp`), exactly as before. Force it any time with `--engine local`. The walkthrough below uses this no-key path.
+
 1. Give your agent access to a folder containing a **short video**, such as `example.mp4`. In Cowork, connect that folder; in a coding agent, open the folder as your project. Replace the filename below with your own.
 2. Paste this **into the agent's message box**:
 
@@ -192,6 +196,17 @@ This is a conditional route, not the recommended beginner setup. Enable code exe
 A successful upload does not establish a working video pipeline. The hosted environment may run programs while blocking video/CDN/API/model downloads. Check the account's [execution and network settings](https://support.claude.com/en/articles/12111783-create-and-edit-files-with-claude). An accessible local file avoids its download, but speech transcription may still require permitted network access.
 
 </details>
+
+## Choose an engine
+
+| Setting | Default and behavior |
+|---|---|
+| `WATCH_ENGINE` / `--engine` | `auto`: Gemini when a `GEMINI_API_KEY` resolves, otherwise `local`. `gemini` without a key is an error before any network call. `local` never contacts Google. |
+| `GEMINI_API_KEY` | Looked up in the environment, then `~/.config/watch/.env`, then a cwd `.env`. Sent only as a request header; never logged. |
+| `WATCH_GEMINI_MODEL` | `gemini-3.7-flash`. Free-form, so newer model IDs work without an update. |
+| `WATCH_GEMINI_TIMEOUT` | `600` seconds for the question itself; upload and processing waits are bounded separately. |
+
+On a Gemini run, YouTube URLs go to Google directly; other URLs are downloaded with yt-dlp and, like local files, uploaded to Google's Files API, then deleted after the answer (an upload that cannot be deleted expires within 48 hours). `--start`/`--end` restrict Gemini to that range. Frame and transcription options (`--detail`, `--fps`, `--whisper`, …) apply only to the local engine and are listed as ignored. **Watch never switches engines on its own**: a Gemini failure is reported with its category and you decide whether to rerun with `--engine local`. The rest of this README describes the local engine.
 
 ## Choose a transcription fallback
 
@@ -317,6 +332,7 @@ Ask the agent to run bundled `setup.py --json` for resolved paths/versions, JS-r
 | FFmpeg option failure | Inspect the actual FFmpeg path; watch probes `-fps_mode` and retains advertised `-vsync` compatibility for older builds. |
 | Missing JS runtime/EJS | Update the owning yt-dlp package and follow upstream Deno/EJS setup. |
 | 403 / login challenge | Read the original error; use explicit authentication only if you have access. A 403 has no universal workaround. |
+| `Gemini auth` / `quota` / `rejected` / `upload` / `service` / `network` / `response` | The Gemini engine failed: bad or missing key, rate limit, a video Google refused (private, unsupported, too long), a failed upload, a Google-side error, no route to `generativelanguage.googleapis.com`, or an unreadable reply. Nothing ran locally; fix the cause or rerun with `--engine local`. |
 | 429 | Wait before retrying; the service is rate limiting requests. |
 | Explicit hosted egress denial | Check the environment's network settings or use an accessible local source. Cloud ASR/cold model setup still need network access. |
 | Certificate failure | Configure the trusted CA/proxy correctly; do not disable TLS verification. |
