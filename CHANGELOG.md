@@ -2,7 +2,7 @@
 
 All notable changes to `/watch` are documented here.
 
-## [0.3.0] — Unreleased
+## [0.3.0] — 2026-09-25
 
 ### Added
 - **Gemini engine.** With a `GEMINI_API_KEY`, watch sends the video to Google's agentic video-understanding model (`gemini-3.7-flash`) and relays its timestamped answer: YouTube URLs directly, everything else via a streamed Files API upload that is deleted afterwards. New `--engine auto|gemini|local`, `--question`, `WATCH_ENGINE`, `WATCH_GEMINI_MODEL`, `WATCH_GEMINI_TIMEOUT`. `--start/--end` use static clipping. Standard library only; no silent fallback between engines.
