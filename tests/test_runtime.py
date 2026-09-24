@@ -53,7 +53,7 @@ def test_invalid_probe_metadata(monkeypatch, data):
         frames.get_metadata('test.mp4')
 
 
-@pytest.mark.parametrize('help_text,expected', [('-vsync  set video sync', '-vsync'), ('-fps_mode  set fps\n-vsync  set sync', '-fps_mode'), ('-fps_mode  set fps', '-fps_mode'), ('unknown option: fps_mode', None)])
+@pytest.mark.parametrize('help_text,expected', [('-vsync  set video sync', '-vsync'), ('-fps_mode  set fps\n-vsync  set sync', '-fps_mode'), ('-fps_mode  set fps', '-fps_mode'), ('-fps_mode[:<stream_spec>]  set framerate mode for matching video streams', '-fps_mode'), ('unknown option: fps_mode', None)])
 def test_sync_capability_probe(monkeypatch, help_text, expected):
     calls = []
     def help_run(cmd, **kw):

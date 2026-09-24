@@ -117,9 +117,10 @@ def _sync_option(executable: str) -> tuple[str, str]:
     result = run_text([executable, "-hide_banner", "-h", "full"], timeout=30)
     if result.returncode == 0:
         help_text = result.stdout + result.stderr
-        if re.search(r"(?m)^\s*-fps_mode\s", help_text):
+        # FFmpeg 9 lists options with stream specifiers, e.g. "-fps_mode[:<stream_spec>]".
+        if re.search(r"(?m)^\s*-fps_mode\b", help_text):
             return "-fps_mode", "vfr"
-        if re.search(r"(?m)^\s*-vsync\s", help_text):
+        if re.search(r"(?m)^\s*-vsync\b", help_text):
             return "-vsync", "vfr"
     raise SystemExit(f"{executable} did not advertise -fps_mode or -vsync; check the FFmpeg installation. {diagnostic(result.stderr)}")
 
