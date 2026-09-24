@@ -23,6 +23,14 @@ def test_original_track_overrides_dubbed_metadata(language):
     assert download.select_caption(info)['key'] == f'{language}-orig'
 
 
+def test_unknown_language_prefers_english():
+    # "Me at the zoo" reports no language and has manual de + en tracks.
+    picked = download.select_caption({'extractor_key': 'Youtube', 'subtitles': _tracks('de', 'en')})
+    assert (picked['key'], picked['provenance']) == ('en', 'unknown')
+    assert download.select_caption({'automatic_captions': _tracks('af', 'en-GB', 'zu')})['key'] == 'en-GB'
+    assert download.select_caption({'subtitles': _tracks('de', 'fr')})['key'] == 'de'
+
+
 def test_requested_translation_and_unknown_source():
     info = {'extractor_key': 'Youtube', 'automatic_captions': _tracks('ko-orig', 'en')}
     assert download.select_caption(info, 'en')['provenance'] == 'requested translation'

@@ -106,8 +106,10 @@ def select_caption(info: dict, language: str = 'auto') -> dict | None:
         if language != 'auto':
             return key == target or base == target or ('-' not in language and base.split('-')[0] == target)
         return target and (base == target or base.split('-')[0] == str(target).split('-')[0])
+    def english_first(key):  # Unknown source language: prefer English over alphabetical order.
+        return key.removesuffix('-orig').split('-')[0] != 'en', key
     for kind, tracks in (('manual', manual), ('automatic', automatic)):
-        keys = sorted(tracks)
+        keys = sorted(tracks, key=english_first)
         if target:
             keys = sorted((k for k in keys if matches(k)), key=lambda k: (k != target, k != f'{target}-orig', k))
         if keys:
@@ -124,7 +126,7 @@ def select_caption(info: dict, language: str = 'auto') -> dict | None:
     if language == 'auto':
         for kind, tracks in (('manual', manual), ('automatic', automatic)):
             if tracks:
-                key = sorted(tracks)[0]
+                key = min(tracks, key=english_first)
                 return {'key': key, 'language': key.removesuffix('-orig'), 'kind': kind, 'provenance': 'unknown'}
     return None
 

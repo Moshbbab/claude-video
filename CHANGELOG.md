@@ -9,7 +9,7 @@ All notable changes to `/watch` are documented here.
 - Setup wizard asks for the engine first; a Gemini-only setup no longer requires `ffmpeg`/`yt-dlp` for YouTube URLs.
 - Managed, optional WhisperX 3.8.6 setup with uv, a separate Python 3.12 environment, cache warm-up, recoverable installation state, and local CPU transcription. Default model: small, int8, batch 8; language and timeout are configurable. Local failures never select a cloud provider.
 - One-time fallback selection in the skill wizard: WhisperX, Groq, OpenAI, or captions only. Existing installations retain the `auto` cloud-key preference.
-- Original-language caption selection and provenance, `--sub-lang`, and explicit cookie-file/browser options shared across downloader stages.
+- Original-language caption selection and provenance (English preferred when the source language is unknown), `--sub-lang`, and explicit cookie-file/browser options shared across downloader stages.
 - Reports for unavailable modalities, no speech, and missing cloud-transcription intervals. Offline dependency diagnostics and a cross-platform CI gate for release publication.
 
 ### Fixed
