@@ -102,7 +102,8 @@ def test_nonzero_input_pts_are_source_relative(tmp_path):
     subprocess.run(['ffmpeg', '-v', 'error', '-f', 'lavfi', '-i', 'testsrc2=s=160x120:r=10:d=3', '-vf', 'setpts=PTS+7/TB', '-c:v', 'libx264', str(clip)], check=True)
     out = frames.extract(str(clip), tmp_path / 'f', fps=1, max_frames=3)
     assert [f['timestamp_seconds'] for f in out] == [0, 1, 2]
-    assert frames.get_metadata(str(clip))['duration_seconds'] == 3
+    # FFmpeg 7.1 muxes this shifted clip one frame (0.1s) short; either is source-relative, 10 would not be.
+    assert 2.9 <= frames.get_metadata(str(clip))['duration_seconds'] <= 3
 
 
 @pytest.mark.parametrize('fps', [float('nan'), float('inf'), -1, 0])
