@@ -39,7 +39,7 @@ jobs:
         if: runner.os == 'Windows'
         run: choco install ffmpeg --no-progress -y
       - name: Install test tools
-        run: python -m pip install pytest "yt-dlp[default]==2026.8.19"
+        run: python -m pip install --upgrade pytest "yt-dlp[default]"
       - name: Verify executables
         run: |
           ffmpeg -version

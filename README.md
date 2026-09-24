@@ -171,7 +171,7 @@ Tell me which tools are missing and help me install them here.
 | Ubuntu/Debian | `sudo apt install python3 ffmpeg pipx`, then `pipx install "yt-dlp[default,curl-cffi]"` and `pipx ensurepath`. Install [Deno](https://docs.deno.com/runtime/getting_started/installation/) for YouTube. |
 | Windows | Install [Python 3.10+](https://www.python.org/downloads/windows/), then `winget install --id Gyan.FFmpeg --exact`, `winget install --id yt-dlp.yt-dlp --exact`, and `winget install --id DenoLand.Deno --exact`. |
 
-Reopen the terminal and agent after installation so they can find the new tools. On Windows, verify Python with `python --version` or `py -3 --version`. The tested yt-dlp baseline is **2026.08.19**; Watch uses the executable available in the active environment.
+Reopen the terminal and agent after installation so they can find the new tools. On Windows, verify Python with `python --version` or `py -3 --version`. Watch supports the **latest yt-dlp release** only, because sites routinely break older ones; it uses the executable available in the active environment.
 
 ## Using a web app?
 
@@ -311,7 +311,7 @@ Update Watch using the same method you installed it with, then start a new sessi
 
 Marketplace auto-update behavior depends on the host and your settings. Updating Watch is separate from updating its media tools.
 
-Update yt-dlp with its owning installer, then verify the same executable with `yt-dlp --version`:
+Keep yt-dlp on its latest release. Update it with its owning installer, then verify the same executable with `yt-dlp --version`:
 
 - Homebrew: `brew upgrade yt-dlp`
 - pipx: `pipx upgrade yt-dlp`
@@ -331,7 +331,7 @@ Ask the agent to run bundled `setup.py --json` for resolved paths/versions, JS-r
 | Python opens the Store | Use an installed interpreter verified by `python --version` or `py -3 --version`. |
 | FFmpeg option failure | Inspect the actual FFmpeg path; watch probes `-fps_mode` and retains advertised `-vsync` compatibility for older builds. |
 | Missing JS runtime/EJS | Update the owning yt-dlp package and follow upstream Deno/EJS setup. |
-| 403 / login challenge | Read the original error; use explicit authentication only if you have access. A 403 has no universal workaround. |
+| 403 / login challenge | Update yt-dlp to its latest release (see [Updating and troubleshooting](#updating-and-troubleshooting)) and retry once; the agent does this automatically. If the 403 persists, read the original error and use explicit authentication only if you have access. |
 | `Gemini auth` / `quota` / `rejected` / `upload` / `service` / `network` / `response` | The Gemini engine failed: bad or missing key, rate limit, a video Google refused (private, unsupported, too long), a failed upload, a Google-side error, no route to `generativelanguage.googleapis.com`, or an unreadable reply. Nothing ran locally; fix the cause or rerun with `--engine local`. |
 | 429 | Wait before retrying; the service is rate limiting requests. |
 | Explicit hosted egress denial | Check the environment's network settings or use an accessible local source. Cloud ASR/cold model setup still need network access. |

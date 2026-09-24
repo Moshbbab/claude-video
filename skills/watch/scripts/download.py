@@ -54,6 +54,9 @@ def network_diagnostic(stderr: str) -> str:
         hint = 'This source requires authentication; supply an explicit cookie option if you have access.'
     elif '429' in lower or 'too many requests' in lower:
         hint = 'The service is rate limiting requests; wait before trying again.'
+    elif re.search(r'\b403\b', lower) or 'forbidden' in lower:
+        # Only the latest yt-dlp is supported; sites routinely break older releases with 403s.
+        hint = 'No generic fix for a 403; update yt-dlp to its latest release and retry once.'
     elif any(s in lower for s in ('egress denied', 'not in the allowlist', 'blocked by network policy')):
         hint = 'This environment blocks the destination; check its network settings or use an accessible local file.'
     elif any(s in lower for s in ('certificate_verify_failed', 'certificate verify failed', 'unable to get local issuer certificate')):

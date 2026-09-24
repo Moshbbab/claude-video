@@ -100,7 +100,7 @@ def test_rejects_outside_final_path(monkeypatch, tmp_path):
 
 
 @pytest.mark.parametrize('message,hint', [
-    ('HTTP 403 forbidden', 'original error'), ('HTTP 429', 'rate limiting'),
+    ('HTTP Error 403: Forbidden', 'latest release'), ('unexpected extractor failure', 'original error'), ('HTTP 429', 'rate limiting'),
     ('Sign in to continue', 'authentication'), ('No JavaScript runtime', 'Deno/EJS'),
     ('egress denied', 'network settings'), ('certificate verify failed', 'trusted CA'),
 ])

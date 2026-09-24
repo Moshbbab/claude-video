@@ -15,7 +15,7 @@ All notable changes to `/watch` are documented here.
 ### Fixed
 - SessionStart hook command now quotes `${CLAUDE_PLUGIN_ROOT}`, so plugin paths containing spaces work.
 - Uniform sampling now spans the actual capped range and labels selected source frames with their real timestamps, including fractional seeks and cue frames.
-- FFmpeg sync-option capability detection, empty keyframe-window fallback, RGB thumbnail deduplication, and actionable probe/launch errors.
+- FFmpeg sync-option capability detection (including FFmpeg 9's `-fps_mode[:<stream_spec>]` help format; tested on FFmpeg 4.4 through 9.0), empty keyframe-window fallback, RGB thumbnail deduplication, and actionable probe/launch errors.
 - UTF-8 output and subprocess decoding, BOM-aware shared config parsing, provider-key pairing, atomic config updates, keyless readiness, and advisory setup hooks.
 - Bounded caption downloads respect watch-owned output templates while retaining intentional yt-dlp configuration. Fresh run directories and completed final-path validation prevent stale/partial media reuse.
 - WebVTT optional-hour timestamps, entities, cue/block parsing, and overlap-scoped deduplication preserve independent repeated speech.
@@ -23,6 +23,7 @@ All notable changes to `/watch` are documented here.
 - Conservative 24,000,000-byte cloud upload budgets, actual chunk/multipart size checks, and explicit partial/no-speech metadata.
 
 ### Changed
+- Only the latest yt-dlp release is supported. An HTTP 403 now tells the agent to update yt-dlp with its owning package manager and retry once; CI tests against the latest release instead of a pinned one.
 - First-success installation documentation separates media tools from optional speech backends and describes host/network limitations.
 - User-provided output directories now contain a disposable run child; cleanup preserves the parent and source files.
 - The base runtime remains standard-library-only; local model environments and caches live outside the self-contained skill folder.
