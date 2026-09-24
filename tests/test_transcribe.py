@@ -5,7 +5,7 @@ from transcribe import parse_vtt, normalize_segments
 
 def parse(tmp_path, body):
     path = tmp_path / 'captions.vtt'
-    path.write_text(body, encoding='utf-8')
+    path.write_bytes(body.encode('utf-8'))  # Exact bytes: text mode on Windows would turn \r\n into \r\r\n.
     return parse_vtt(str(path))
 
 

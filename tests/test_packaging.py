@@ -12,10 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_release_versions_match_canonical_skill():
     skill = ROOT / 'skills/watch/SKILL.md'
-    version = re.search(r'^version: "([^"]+)"', skill.read_text(), re.M).group(1)
+    version = re.search(r'^version: "([^"]+)"', skill.read_text(encoding='utf-8'), re.M).group(1)
     for relative in ('.claude-plugin/plugin.json', '.codex-plugin/plugin.json'):
-        assert json.loads((ROOT / relative).read_text())['version'] == version
-    assert json.loads((ROOT / '.codex-plugin/plugin.json').read_text())['skills'] == './skills/'
+        assert json.loads((ROOT / relative).read_text(encoding='utf-8'))['version'] == version
+    assert json.loads((ROOT / '.codex-plugin/plugin.json').read_text(encoding='utf-8'))['skills'] == './skills/'
     assert not (ROOT / 'commands').exists()
 
 
