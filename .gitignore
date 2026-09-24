@@ -15,5 +15,6 @@ htmlcov/
 # local Claude Code settings
 .claude/settings.local.json
 
-# superpowers plugin planning docs (local only)
+# planning docs (local only)
 docs/superpowers/
+/V[0-9]*_*.md
