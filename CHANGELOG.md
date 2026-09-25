@@ -2,6 +2,12 @@
 
 All notable changes to `/watch` are documented here.
 
+## [0.3.2] — 2026-09-25
+
+### Changed
+- Setup lets the user choose how to add an API key: paste it in chat, or have the agent open `~/.config/watch/.env` in their text editor so they can paste it themselves.
+- README: Watch is supported in Claude Code (Claude Desktop's Code tab, VS Code, or a terminal). Claude Chat and Cowork are not supported: in Cowork's cloud environment the Gemini key does not persist between tasks and most sites block yt-dlp downloads. The standalone Chat upload instructions are removed.
+
 ## [0.3.1] — 2026-09-25
 
 ### Fixed
