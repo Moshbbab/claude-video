@@ -1,14 +1,10 @@
 ---
 name: watch
-version: "0.3.0"
 description: Watch a video (URL or local path). Downloads with yt-dlp, extracts auto-scaled frames with ffmpeg, pulls the transcript from captions (or local WhisperX / cloud Whisper fallback), and hands the result to the agent so it can answer questions about what's in the video. With a Gemini API key, Google's agentic video model watches the full video instead.
-argument-hint: "<video-url-or-path> [question]"
-allowed-tools: Bash, Read, AskUserQuestion
-homepage: https://github.com/bradautomates/claude-video
-repository: https://github.com/bradautomates/claude-video
-author: bradautomates
 license: MIT
-user-invocable: true
+allowed-tools: Bash, Read, AskUserQuestion
+metadata:
+  version: "0.3.1"
 ---
 
 # /watch
@@ -17,7 +13,7 @@ Run the bundled Python script. With the **gemini** engine (a `GEMINI_API_KEY` is
 
 ## Resolve the skill and interpreter
 
-Set `SKILL_DIR` to the **absolute directory containing this SKILL.md that you just read**. `scripts/` is its sibling in every host; do not use a Claude-specific environment variable. Check that `SKILL_DIR/scripts/watch.py` exists. The whole `skills/watch/` folder must be installed, with one canonical skill and no command wrapper.
+`SKILL_DIR` is the absolute directory containing this SKILL.md; `scripts/` sits beside it.
 
 Commands below use `python3` for macOS/Linux. On Windows, verify a working Python 3.10+ with `python --version` or `py -3 --version` and use that interpreter. `python3` is not always a Store alias; inspect the actual result. In PowerShell use `$SKILL_DIR` rather than Bash variable syntax, for example:
 
