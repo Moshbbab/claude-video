@@ -1,23 +1,23 @@
 # /watch
 
-Give an agent video evidence: a URL or local file becomes timestamped frames and a transcript. Install it in Claude Desktop for Cowork or Code, or use it with Codex and other [Agent Skills](https://agentskills.io) hosts. Native captions come first; optional local WhisperX or Groq/OpenAI transcription handles videos without captions.
+Give an agent video evidence: a URL or local file becomes timestamped frames and a transcript. Install it in Claude Code (the desktop app, VS Code, or a terminal), or use it with Codex and other [Agent Skills](https://agentskills.io) hosts. Native captions come first; optional local WhisperX or Groq/OpenAI transcription handles videos without captions.
 
 ## Choose your app
 
-**Using Claude? Run Watch in Cowork or Code.** The plugin is not used in regular Chat. For a first setup, use one of the desktop paths below; [browser sessions have extra limitations](#using-a-web-app).
+**Using Claude? Run Watch in Claude Code.** Install it through Claude Desktop and use a **Code** session, or add it with the plugin commands in VS Code or a terminal. Watch does **not** work in Claude Chat or Cowork; [see why](#chat-cowork-and-browser-apps).
 
 | Where you use your agent | Start here |
 |---|---|
-| **Claude Desktop — Cowork or Code** | [Install through Customize](#claude-desktop--cowork-or-code) — no terminal needed |
+| **Claude Desktop — Code** | [Install through Customize](#claude-desktop--code) — no terminal needed |
 | **Codex — desktop app, CLI, or IDE extension** | [Ask Codex to install it](#codex) — no terminal needed |
 | **Claude Code in VS Code** | [Use the extension's plugin window](#claude-code-in-vs-code) |
 | **Claude Code in a terminal** | [Enter the plugin commands](#claude-code-in-a-terminal) |
 | **Cursor, Copilot, or another local agent** | [Use the Skills CLI](#other-local-agents) |
-| **Claude or ChatGPT in a browser** | [Check the supported mode and limitations](#using-a-web-app) |
+| **Claude Chat, Cowork, or a browser app** | [Chat and Cowork don't work; browser apps have limits](#chat-cowork-and-browser-apps) |
 
 Choose **one installation method** for your agent. If Watch is already installed, go straight to [your first video](#try-your-first-video).
 
-### Claude Desktop — Cowork or Code
+### Claude Desktop — Code
 
 1. Open **Claude Desktop** and click **Customize** in the sidebar.
 2. Select **Plugins**, open **Add**, then choose **Add marketplace**.
@@ -37,7 +37,7 @@ https://github.com/bradautomates/claude-video
 ![Marketplace URL form filled with the public claude-video GitHub address and a Sync button](docs/images/install/claude-marketplace-url.png)
 
 5. Find **Watch** in the added marketplace and install it. Adding the marketplace alone does not install Watch.
-6. Start a **Cowork** task or a **Code** session and ask it to use the watch skill. Continue with [your first video](#try-your-first-video).
+6. Start a **Code** session and ask it to use the watch skill. Watch does not work in Cowork tasks ([why](#chat-cowork-and-browser-apps)). Continue with [your first video](#try-your-first-video).
 
 If you do not see these controls, update Claude Desktop. On a managed account, your administrator may control which plugins you can add. See the [official plugin guide](https://claude.com/docs/cowork/guide/plugins).
 
@@ -123,17 +123,17 @@ For other [Agent Skills hosts](https://agentskills.io), install [Node.js](https:
 npx skills add bradautomates/claude-video -g --skill watch
 ```
 
-Select your agent when prompted, follow the installer's reported destination, then restart the agent. Node/npm is needed for this installer, not for Watch's Python runtime. This command does not install Watch into Claude Desktop's Cowork environment.
+Select your agent when prompted, follow the installer's reported destination, then restart the agent. Node/npm is needed for this installer, not for Watch's Python runtime.
 
 You can target an agent explicitly, for example `-a codex`, but Codex users can use the simpler [message-box installation](#codex). See the [Skills CLI documentation](https://github.com/vercel-labs/skills).
 
 ## Try your first video
 
-**Fastest path — let Gemini watch it.** Add a free [Google AI Studio key](https://aistudio.google.com/apikey) when the setup wizard asks (or put `GEMINI_API_KEY=...` in `~/.config/watch/.env`). Watch then hands the whole video — picture and sound — to Google's agentic video model and relays its timestamped answer. YouTube links need nothing else installed. Local files are uploaded to Google and deleted after the answer.
+**Fastest path — let Gemini watch it.** Get a free [Google AI Studio key](https://aistudio.google.com/apikey). When the setup wizard asks for it, paste it in the chat, or have the agent open `~/.config/watch/.env` in your text editor so you can paste it after `GEMINI_API_KEY=` and save it yourself. Watch then hands the whole video — picture and sound — to Google's agentic video model and relays its timestamped answer. YouTube links need nothing else installed. Local files are uploaded to Google and deleted after the answer.
 
 **No key, or a private video?** Choose `local`. Watch extracts frames and a transcript on your machine (`ffmpeg` + `yt-dlp`), exactly as before. Force it any time with `--engine local`. The walkthrough below uses this no-key path.
 
-1. Give your agent access to a folder containing a **short video**, such as `example.mp4`. In Cowork, connect that folder; in a coding agent, open the folder as your project. Replace the filename below with your own.
+1. Give your agent access to a folder containing a **short video**, such as `example.mp4`. Open that folder as your agent's project. Replace the filename below with your own.
 2. Paste this **into the agent's message box**:
 
 ```text
@@ -161,7 +161,7 @@ Use the watch skill's bundled setup.py to check dependencies in this session.
 Tell me which tools are missing and help me install them here.
 ```
 
-**Cowork and cloud sessions:** let the agent check inside its execution environment. Installing FFmpeg with Homebrew on your Mac does not install it inside Cowork's Linux VM or cloud sandbox. Package and network permissions may require administrator help. A new cloud task may also need setup again. [Cowork architecture](https://support.claude.com/en/articles/14479288-claude-cowork-architecture-overview)
+**Cloud sessions** (such as Claude Code on the web): let the agent check inside its execution environment. Installing FFmpeg with Homebrew on your Mac does not install it inside a cloud sandbox. Package and network permissions may require administrator help. A new cloud task may also need setup again.
 
 **Agents running directly on your computer:** Watch can install missing media tools through Homebrew on macOS. On other systems it supplies commands. If manual installation is needed, run the appropriate commands in a terminal:
 
@@ -173,29 +173,18 @@ Tell me which tools are missing and help me install them here.
 
 Reopen the terminal and agent after installation so they can find the new tools. On Windows, verify Python with `python --version` or `py -3 --version`. Watch supports the **latest yt-dlp release** only, because sites routinely break older ones; it uses the executable available in the active environment.
 
-## Using a web app?
+## Chat, Cowork, and browser apps
 
-For the easiest first setup, use [Claude Desktop](#claude-desktop--cowork-or-code) or [Codex locally](#codex).
+**Watch works in Claude Code:** a **Code** session in [Claude Desktop](#claude-desktop--code), or Claude Code installed with the plugin commands in [VS Code](#claude-code-in-vs-code) or [a terminal](#claude-code-in-a-terminal). Codex and other [local agents](#other-local-agents) work too.
 
-| Browser surface | What to know |
+| Surface | What to know |
 |---|---|
-| **Regular Claude Chat** | Watch's plugin is used in Cowork or Code. Uploading a standalone skill to Chat does not remove sandbox network restrictions. |
-| **Cowork on the web** | Select **Cowork** in the message box. Current Cowork supports skills/plugins on the web, but Watch still needs working tools and permitted access to video, API, and model hosts. Its full workflow has not been verified here. |
+| **Claude Chat** | Not supported, including uploading `watch.skill` as a custom skill. |
+| **Cowork** (desktop or web) | Not supported. Cowork runs Watch in a cloud environment. The [Gemini engine](#choose-an-engine) can run there, but your `GEMINI_API_KEY` doesn't persist between tasks. The local engine can't fetch most URLs, because most sites block yt-dlp downloads from that environment. |
 | **Claude Code on the web** | Uses a cloud environment with its own setup and network settings. The interactive `/plugin` installer is unavailable there. The terminal walkthrough above is for local Claude Code. |
 | **ChatGPT/Codex browser surfaces** | Attaching `watch.skill` to a chat is not a local Codex installation. Use the Codex installer above; a public/workspace plugin listing is a separate distribution route. |
 
-See the official guides for [Cowork on web and desktop](https://support.claude.com/en/articles/15520349-use-claude-cowork-on-web-desktop-and-mobile), [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web), and [OpenAI plugin surfaces](https://learn.chatgpt.com/docs/plugins).
-
-<details>
-<summary>Advanced: standalone skill upload in Claude</summary>
-
-This is a conditional route, not the recommended beginner setup. Enable code execution, then use **Customize → Skills → + → Create skill → Upload a skill**. See [Claude's custom-skill instructions](https://support.claude.com/en/articles/12512180-use-skills-in-claude).
-
-[Releases](https://github.com/bradautomates/claude-video/releases/latest) include `watch.skill`, a ZIP-format archive of the skill folder. If the picker requires a `.zip` extension, make a copy named `watch.zip`. The current picker's acceptance of this release artifact has not been verified. GitHub's **Source code (zip)** is the whole repository, not the skill package. Use **Upload a skill**, not **Upload plugin**.
-
-A successful upload does not establish a working video pipeline. The hosted environment may run programs while blocking video/CDN/API/model downloads. Check the account's [execution and network settings](https://support.claude.com/en/articles/12111783-create-and-edit-files-with-claude). An accessible local file avoids its download, but speech transcription may still require permitted network access.
-
-</details>
+See the official guides for [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web) and [OpenAI plugin surfaces](https://learn.chatgpt.com/docs/plugins).
 
 ## Choose an engine
 
